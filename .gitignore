@@ -66,3 +66,7 @@ docker-compose.override.yml
 coverage/
 *.gcov
 *.lcov
+
+# Ignore key files for decrypting credentials and more.
+/config/credentials/*.key
+
