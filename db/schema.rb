@@ -10,9 +10,31 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2025_12_30_054944) do
+ActiveRecord::Schema[8.1].define(version: 2025_12_30_101306) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
+
+  create_table "color_themes", force: :cascade do |t|
+    t.string "color_code", null: false
+    t.string "color_name", null: false
+    t.datetime "created_at", null: false
+    t.text "description"
+    t.integer "display_order", null: false
+    t.boolean "is_active", default: true, null: false
+    t.datetime "updated_at", null: false
+    t.index ["display_order"], name: "index_color_themes_on_display_order"
+    t.index ["is_active"], name: "index_color_themes_on_is_active"
+  end
+
+  create_table "daily_themes", force: :cascade do |t|
+    t.bigint "color_theme_id", null: false
+    t.datetime "created_at", null: false
+    t.text "description"
+    t.date "theme_date", null: false
+    t.datetime "updated_at", null: false
+    t.index ["color_theme_id"], name: "index_daily_themes_on_color_theme_id"
+    t.index ["theme_date"], name: "index_daily_themes_on_theme_date", unique: true
+  end
 
   create_table "users", force: :cascade do |t|
     t.datetime "created_at", null: false
@@ -26,4 +48,6 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_30_054944) do
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
   end
+
+  add_foreign_key "daily_themes", "color_themes"
 end
