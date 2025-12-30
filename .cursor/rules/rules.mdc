@@ -1,0 +1,285 @@
+# コーディング規約
+
+> 📋 **プロジェクトルールを読み込みました**: このプロジェクトのコーディング規約に従ってコードを生成・修正します。
+>
+> **重要**: 会話開始時やコード生成・修正の際には、このルールファイルを読み込んだことを明示してください。
+
+このドキュメントは、このプロジェクトにおけるコーディング規約を定義します。Cursor AI がコードを生成・修正する際のガイドラインとして使用してください。
+
+## ルール適用の確認
+
+このルールファイルが読み込まれている場合、AI は以下のように応答する必要があります：
+
+- 会話開始時やコード生成・修正時に「プロジェクトのコーディング規約に従います」などのメッセージを表示する
+- DRY 原則、KISS 原則、SOLID 原則などの基本原則を遵守する
+- Rails 固有の規約（Fat Model, Skinny Controller など）に従う
+
+## 基本原則
+
+### DRY (Don't Repeat Yourself)
+
+- **重複コードを避ける**: 同じロジックが 2 回以上出現する場合は、メソッド、ヘルパー、またはモジュールに抽出する
+- **共通処理の抽象化**: 複数の場所で使用される処理は、適切な場所（モデル、コントローラー、ヘルパー、Concern）に配置する
+- **定数の一元管理**: マジックナンバーや文字列リテラルは定数として定義し、`config/locales`やモデル内の定数として管理する
+
+### KISS (Keep It Simple, Stupid)
+
+- **シンプルな実装を優先**: 過度に複雑な実装を避け、読みやすさを重視する
+- **早期リターン**: ガード句を使用してネストを減らす
+- **明確な命名**: 変数名、メソッド名は意図が明確に伝わるものにする
+
+### SOLID 原則
+
+- **単一責任の原則**: 各クラス、メソッドは 1 つの責任のみを持つ
+- **開放閉鎖の原則**: 拡張に対して開き、修正に対して閉じる設計を心がける
+- **依存性逆転の原則**: 具象クラスではなく抽象（インターフェース）に依存する
+
+## Rails 固有の規約
+
+### コントローラー
+
+- **スリムなコントローラー**: ビジネスロジックはモデルに移動する
+- **Strong Parameters**: 必ず Strong Parameters を使用する
+- **アクションの最小化**: 各アクションは必要最小限の処理のみを行う
+- **before_action の活用**: 共通処理は`before_action`で処理する
+- **HTTP ステータスコード**: 適切な HTTP ステータスコードを返す
+
+```ruby
+# Good
+class UsersController < ApplicationController
+  before_action :set_user, only: [:show, :edit, :update, :destroy]
+  before_action :authenticate_user!, except: [:index, :show]
+
+  def index
+    @users = User.all
+  end
+
+  private
+
+  def set_user
+    @user = User.find(params[:id])
+  end
+end
+
+# Bad
+class UsersController < ApplicationController
+  def show
+    @user = User.find(params[:id]) # 重複
+    # ビジネスロジックが混在
+  end
+end
+```
+
+### モデル
+
+- **Fat Model, Skinny Controller**: ビジネスロジックはモデルに配置する
+- **スコープの活用**: よく使うクエリはスコープとして定義する
+- **バリデーション**: 適切なバリデーションを設定する
+- **コールバックの慎重な使用**: コールバックは必要最小限にし、副作用を避ける
+- **Concern の活用**: 複数のモデルで共有される機能は Concern に抽出する
+
+```ruby
+# Good
+class User < ApplicationRecord
+  scope :active, -> { where(active: true) }
+  scope :recent, -> { order(created_at: :desc) }
+
+  validates :name, presence: true, length: { maximum: 50 }
+  validates :email, presence: true, uniqueness: true
+
+  def full_name
+    "#{first_name} #{last_name}".strip
+  end
+end
+
+# Bad
+class User < ApplicationRecord
+  # バリデーションなし
+  # スコープなし
+  # ビジネスロジックがコントローラーに散在
+end
+```
+
+### ビュー
+
+- **パーシャルの活用**: 再利用可能なビューコンポーネントはパーシャルに抽出する
+- **ヘルパーメソッド**: ビュー内の複雑なロジックはヘルパーに移動する
+- **ビュー内のロジック最小化**: ビューは表示ロジックのみを扱う
+
+```erb
+<!-- Good -->
+<%= render partial: 'shared/header' %>
+<%= render @users %>
+
+<!-- Bad -->
+<% @users.each do |user| %>
+  <!-- 長いHTMLが繰り返される -->
+<% end %>
+```
+
+### ルーティング
+
+- **RESTful ルーティング**: 可能な限り RESTful なルーティングを使用する
+- **ネストの制限**: ルーティングのネストは 2 階層までに制限する
+- **名前空間の活用**: 管理画面などは名前空間で分離する
+
+```ruby
+# Good
+resources :users do
+  resources :posts, only: [:index, :show]
+end
+
+# Bad
+get '/users/:user_id/posts/:id', to: 'posts#show'
+```
+
+## Ruby 規約
+
+### 命名規則
+
+- **クラス名**: PascalCase（例: `UserProfile`）
+- **メソッド名・変数名**: snake_case（例: `user_name`, `find_user`）
+- **定数**: SCREAMING_SNAKE_CASE（例: `MAX_RETRY_COUNT`）
+- **プライベートメソッド**: `private`キーワードの下に配置
+
+### メソッド設計
+
+- **単一責任**: 1 つのメソッドは 1 つのことだけを行う
+- **メソッドの長さ**: 1 メソッドは 20 行以内を目安とする（例外あり）
+- **引数の数**: 引数は 3 つ以下を目安とする（ハッシュオプションを活用）
+- **早期リターン**: ガード句で早期リターンし、ネストを減らす
+
+```ruby
+# Good
+def process_order(order)
+  return false unless order.valid?
+  return false unless order.payment_completed?
+
+  order.update(status: :processing)
+  send_confirmation_email(order)
+  true
+end
+
+# Bad
+def process_order(order)
+  if order.valid?
+    if order.payment_completed?
+      order.update(status: :processing)
+      send_confirmation_email(order)
+      return true
+    else
+      return false
+    end
+  else
+    return false
+  end
+end
+```
+
+### エラーハンドリング
+
+- **適切な例外処理**: 予期しないエラーは適切にハンドリングする
+- **例外の再発生**: 例外を捕捉する場合は、ログを記録してから再発生させるか、適切に処理する
+- **バリデーションエラー**: ユーザー入力エラーはバリデーションで処理する
+
+## データベース
+
+### マイグレーション
+
+- **不可逆な変更の回避**: データ削除を含むマイグレーションは慎重に設計する
+- **インデックスの追加**: 外部キーや検索に使用されるカラムにはインデックスを追加する
+- **NOT NULL 制約**: 可能な限り NOT NULL 制約を追加する（既存データがある場合は段階的に）
+
+```ruby
+# Good
+class AddNotNullToUserName < ActiveRecord::Migration[8.1]
+  def change
+    change_column_null :users, :name, false
+  end
+end
+
+# Bad
+class AddNotNullToUserName < ActiveRecord::Migration[8.1]
+  def change
+    change_column :users, :name, :string, null: false # 既存データがある場合エラー
+  end
+end
+```
+
+## セキュリティ
+
+### 基本的なセキュリティ対策
+
+- **Strong Parameters**: 必ず Strong Parameters を使用する
+- **SQL インジェクション対策**: プレースホルダーを使用したクエリを書く（ActiveRecord は自動で対応）
+- **XSS 対策**: ユーザー入力は適切にエスケープする（Rails はデフォルトで対応）
+- **CSRF 対策**: `protect_from_forgery`を使用する（デフォルトで有効）
+- **認証・認可**: Devise などの認証ライブラリを適切に使用する
+
+## パフォーマンス
+
+### データベースクエリ
+
+- **N+1 問題の回避**: `includes`、`preload`、`eager_load`を適切に使用する
+- **不要なデータの取得を避ける**: `select`で必要なカラムのみ取得する
+- **ページネーション**: 大量のデータを扱う場合は`kaminari`や`will_paginate`を使用する
+
+```ruby
+# Good
+@users = User.includes(:posts).page(params[:page])
+
+# Bad
+@users = User.all # N+1問題が発生する可能性
+```
+
+### キャッシュ
+
+- **適切なキャッシュ戦略**: 頻繁にアクセスされるデータはキャッシュを検討する
+- **フラグメントキャッシュ**: ビューの一部をキャッシュする
+
+## コードスタイル
+
+### フォーマット
+
+- **Rubocop 準拠**: `rubocop-rails-omakase`の設定に従う
+- **一貫性**: プロジェクト全体で一貫したスタイルを保つ
+- **インデント**: 2 スペースを使用する
+
+### コメント
+
+- **必要なコメントのみ**: コードで表現できることはコメントにしない
+- **Why を説明**: What ではなく Why を説明するコメントを書く
+- **日本語コメント**: 日本語でコメントを書く（このプロジェクトの場合）
+
+```ruby
+# Good
+# ユーザーが退会済みの場合、メール送信をスキップする
+# （GDPR準拠のため、退会済みユーザーには連絡しない）
+return if user.deactivated?
+
+# Bad
+# ユーザーを取得する
+user = User.find(id)
+```
+
+## 依存関係管理
+
+### Gem の使用
+
+- **必要な Gem のみ**: 必要最小限の Gem を使用する
+- **バージョン指定**: Gemfile でバージョンを適切に指定する
+- **セキュリティ更新**: 定期的に`bundle audit`を実行する
+
+## その他
+
+### Git コミット
+
+- **意味のあるコミットメッセージ**: 何を変更したか、なぜ変更したかを明確に記述する
+- **小さなコミット**: 1 つのコミットは 1 つの変更のみを含める
+
+### ドキュメント
+
+- **README の更新**: 重要な変更は README に反映する
+- **コード内ドキュメント**: 複雑なロジックにはコメントを追加する
+
+---

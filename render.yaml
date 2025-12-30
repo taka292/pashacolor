@@ -33,4 +33,3 @@ databases:
     plan: free
     region: oregon
     postgresMajorVersion: 16
-
