@@ -2,6 +2,9 @@ ja:
   activerecord:
     models:
       user: "ユーザー"
+      post: "投稿"
+      color_theme: "色"
+      daily_theme: "今日のお題"
     attributes:
       user:
         email: "メールアドレス"
@@ -10,6 +13,26 @@ ja:
         password_confirmation: "パスワード（確認）"
         current_password: "現在のパスワード"
         remember_me: "ログイン状態を保持する"
+      post:
+        color_theme: "色"
+        color_theme_id: "色"
+        description: "説明文"
+        latitude: "緯度"
+        longitude: "経度"
+        location_name: "場所名"
+        is_public: "公開設定"
+        posted_at: "投稿日時"
+        image: "画像"
+      color_theme:
+        color_name: "色名"
+        color_code: "色コード"
+        description: "説明"
+        display_order: "表示順序"
+        is_active: "有効/無効"
+      daily_theme:
+        theme_date: "日付"
+        description: "説明"
+        color_theme: "色"
     errors:
       models:
         user:
@@ -26,8 +49,20 @@ ja:
               invalid: "が正しくありません"
             name:
               blank: "を入力してください"
+        post:
+          attributes:
+            color_theme:
+              blank: "を選択してください"
+              required: "を選択してください"
+            color_theme_id:
+              blank: "を選択してください"
+              required: "を選択してください"
+            image:
+              content_type: "は許可されていないファイル形式です"
+              file_size: "のファイルサイズが大きすぎます"
       messages:
         blank: "を入力してください"
         taken: "は既に使用されています"
         too_short: "は%{count}文字以上で入力してください"
         invalid: "は有効な値ではありません"
+        required: "を入力してください"

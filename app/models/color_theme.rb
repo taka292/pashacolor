@@ -1,4 +1,8 @@
 class ColorTheme < ApplicationRecord
+  # 関連付け
+  has_many :posts, dependent: :destroy
+  has_many :daily_themes, dependent: :destroy
+
   # バリデーション
   validates :color_name, presence: true
   validates :color_code, presence: true, format: { with: /\A#[0-9A-Fa-f]{6}\z/, message: "はHEX形式（#RRGGBB）で入力してください" }
