@@ -1,0 +1,33 @@
+ja:
+  activerecord:
+    models:
+      user: "ユーザー"
+    attributes:
+      user:
+        email: "メールアドレス"
+        password: "パスワード"
+        name: "名前"
+        password_confirmation: "パスワード（確認）"
+        current_password: "現在のパスワード"
+        remember_me: "ログイン状態を保持する"
+    errors:
+      models:
+        user:
+          attributes:
+            email:
+              blank: "を入力してください"
+              invalid: "は有効なメールアドレスではありません"
+              taken: "は既に使用されています"
+            password:
+              blank: "を入力してください"
+              too_short: "は%{count}文字以上で入力してください"
+            current_password:
+              blank: "を入力してください"
+              invalid: "が正しくありません"
+            name:
+              blank: "を入力してください"
+      messages:
+        blank: "を入力してください"
+        taken: "は既に使用されています"
+        too_short: "は%{count}文字以上で入力してください"
+        invalid: "は有効な値ではありません"
