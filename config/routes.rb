@@ -1,4 +1,11 @@
 Rails.application.routes.draw do
+  devise_for :users
+
+  # Letter Opener Web (開発環境のみ)
+  if Rails.env.development?
+    mount LetterOpenerWeb::Engine, at: "/letter_opener"
+  end
+
   get "home/index"
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 

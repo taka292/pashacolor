@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+# Tailwind CSS watchスクリプト（watchman不要のポーリングベース）
+
+echo "Starting Tailwind CSS watch (polling mode)..."
+
+# タイムスタンプファイルの準備
+TIMESTAMP_FILE="tmp/tailwind_last_build"
+mkdir -p tmp
+touch $TIMESTAMP_FILE
+
+# 初回ビルド
+echo "Building Tailwind CSS..."
+bin/rails tailwindcss:build
+echo "Initial build complete"
+
+# ファイル監視（シンプルなポーリング）
+echo "Watching for changes in app/assets/tailwind and app/views..."
+while true; do
+  # app/assets/tailwindとapp/viewsの変更を監視
+  CHANGED_FILES=$(find app/assets/tailwind app/views -type f -newer $TIMESTAMP_FILE 2>/dev/null)
+  if [ -n "$CHANGED_FILES" ]; then
+    echo "Detected changes:"
+    echo "$CHANGED_FILES"
+    echo "Rebuilding Tailwind CSS..."
+    bin/rails tailwindcss:build
+    touch $TIMESTAMP_FILE
+    echo "Rebuild complete"
+  fi
+  sleep 1
+done
+
