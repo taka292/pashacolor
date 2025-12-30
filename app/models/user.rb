@@ -6,4 +6,7 @@ class User < ApplicationRecord
 
   # Active Storage
   has_one_attached :avatar
+
+  # バリデーション
+  validates :name, presence: true, length: { maximum: 50 }
 end

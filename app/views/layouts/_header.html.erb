@@ -1,5 +1,7 @@
 <!-- 共通ヘッダー -->
-<header class="bg-white border-b border-gray-200 sticky top-0 z-50">
+<header class="bg-white border-b border-gray-200 sticky top-0 z-50"
+        data-controller="menu"
+        data-action="keydown@window->menu#closeOnEscape">
   <div class="px-4 py-3">
     <div class="flex items-center justify-between">
       <div class="flex items-center">
@@ -15,15 +17,16 @@
       <div class="flex items-center gap-2">
         <!-- ハンバーガーメニューボタン -->
         <button 
-          id="menu-toggle"
+          data-menu-target="toggle"
+          data-action="click->menu#toggle"
           class="p-2 text-gray-600 hover:text-gray-900 focus:outline-none"
           aria-label="メニューを開く"
           aria-expanded="false"
         >
-          <svg id="menu-icon" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg data-menu-target="menuIcon" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
           </svg>
-          <svg id="close-icon" class="w-6 h-6 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg data-menu-target="closeIcon" class="w-6 h-6 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
           </svg>
         </button>
@@ -33,7 +36,8 @@
 
   <!-- ハンバーガーメニュー（ドロワー） -->
   <div 
-    id="menu-drawer"
+    data-menu-target="drawer"
+    data-action="click->menu#closeOnBackdrop"
     class="hidden fixed inset-0 z-40 bg-black/30"
     aria-hidden="true"
   >
@@ -43,7 +47,7 @@
         <div class="flex items-center justify-between p-4 border-b border-gray-200">
           <h2 class="text-lg font-semibold text-gray-800">メニュー</h2>
           <button 
-            id="menu-close"
+            data-action="click->menu#close"
             class="p-2 text-gray-600 hover:text-gray-900 focus:outline-none"
             aria-label="メニューを閉じる"
           >
