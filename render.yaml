@@ -23,8 +23,16 @@ services:
         generateValue: true
       - key: RAILS_MASTER_KEY
         sync: false
+      - key: MAILER_SENDER
+        sync: false
+      - key: MAILER_HOST
+        sync: false
+      - key: GMAIL_USERNAME
+        sync: false
+      - key: GMAIL_APP_PASSWORD
+        sync: false
     buildCommand: ./bin/render-build.sh
-    startCommand: bundle exec rails server -b 0.0.0.0 -p $PORT
+    startCommand: bundle exec rails db:migrate && bundle exec rails server -b 0.0.0.0 -p $PORT
 
 databases:
   # PostgreSQL Database
