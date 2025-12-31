@@ -5,6 +5,12 @@ class PostsController < ApplicationController
 
   def index
     @posts = current_user.posts.includes(:color_theme).recent
+    
+    # 色別フィルタリング
+    if params[:color_theme_id].present?
+      @posts = @posts.where(color_theme_id: params[:color_theme_id])
+      @filtered_color_theme = ColorTheme.find(params[:color_theme_id])
+    end
   end
 
   def show
