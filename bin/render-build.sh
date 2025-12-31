@@ -22,7 +22,7 @@ bundle exec rails db:migrate
 
 # Load seed data (only on first deploy when no color themes exist)
 echo "Checking if seed data needs to be loaded..."
-if bundle exec rails runner "puts ColorTheme.count" 2>/dev/null | grep -q "^0$"; then
+if bundle exec rails runner "exit(ColorTheme.count == 0 ? 0 : 1)" 2>/dev/null; then
   echo "Loading seed data..."
   bundle exec rails db:seed
 else
