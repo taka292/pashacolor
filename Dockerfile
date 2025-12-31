@@ -7,6 +7,7 @@ RUN apt-get update -qq && apt-get install -y \
   postgresql-client \
   build-essential \
   libpq-dev \
+  libvips \
   && rm -rf /var/lib/apt/lists/*
 
 # 作業ディレクトリの設定

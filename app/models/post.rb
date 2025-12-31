@@ -7,6 +7,7 @@ class Post < ApplicationRecord
 
   # バリデーション
   validates :color_theme_id, presence: true
+  validate :image_must_be_present
   validate :image_content_type
   validate :image_file_size
 
@@ -28,6 +29,12 @@ class Post < ApplicationRecord
 
   def set_posted_at
     self.posted_at ||= Time.current
+  end
+
+  def image_must_be_present
+    unless image.attached?
+      errors.add(:image, :required)
+    end
   end
 
   def image_content_type

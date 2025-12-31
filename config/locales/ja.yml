@@ -58,8 +58,10 @@ ja:
               blank: "を選択してください"
               required: "を選択してください"
             image:
-              content_type: "は許可されていないファイル形式です"
-              file_size: "のファイルサイズが大きすぎます"
+              blank: "を選択してください"
+              required: "を選択してください"
+              content_type: "はJPEG、PNG、WebP形式のみアップロード可能です"
+              file_size: "は10MB以下にしてください"
       messages:
         blank: "を入力してください"
         taken: "は既に使用されています"
