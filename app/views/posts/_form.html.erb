@@ -1,0 +1,139 @@
+<%= form_with model: @post, local: true, multipart: true, data: { controller: "post-form geolocation", post_form_target: "form" } do |f| %>
+  <%= render "devise/shared/error_messages", resource: @post %>
+
+  <!-- 色選択セクション -->
+  <div class="bg-white rounded-2xl shadow-md p-6 mb-6">
+    <h2 class="text-lg font-semibold text-gray-800 mb-4 text-center">
+      色を選択してください <span class="text-red-500">*</span>
+    </h2>
+    
+    <!-- 円形の色相環 -->
+    <div class="flex justify-center items-center mb-6">
+      <div class="relative" style="width: 320px; height: 320px;">
+        <% 
+          colors = @color_themes.map.with_index do |color, index|
+            angle = index * 30
+            {
+              id: color.id,
+              name: color.color_name,
+              code: color.color_code,
+              angle: angle
+            }
+          end
+        %>
+        
+        <% colors.each do |color| %>
+          <% 
+            x = 160 + 100 * Math.cos((color[:angle] - 90) * Math::PI / 180)
+            y = 160 + 100 * Math.sin((color[:angle] - 90) * Math::PI / 180)
+          %>
+          <label class="absolute cursor-pointer" style="left: <%= x - 20 %>px; top: <%= y - 20 %>px;">
+            <%= f.radio_button :color_theme_id, color[:id], class: "hidden peer", 
+                data: { 
+                  action: "change->post-form#updateSelectedColor",
+                  post_form_color_name_param: color[:name],
+                  post_form_color_code_param: color[:code]
+                } %>
+            <div 
+              class="w-10 h-10 rounded-full border-4 border-white shadow-lg transition-all peer-checked:scale-125 peer-checked:ring-4 peer-checked:ring-green-400"
+              style="background-color: <%= color[:code] %>;"
+              title="<%= color[:name] %>"
+            ></div>
+          </label>
+        <% end %>
+        
+        <!-- 中央の円 -->
+        <div 
+          class="absolute rounded-full border-4 border-green-200 bg-white shadow-lg"
+          style="
+            width: 110px;
+            height: 110px;
+            left: 105px;
+            top: 105px;
+          "
+        >
+          <div class="flex flex-col items-center justify-center h-full">
+            <svg class="w-8 h-8 text-green-500 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 0 002-2V6a2 0 00-2-2H6a2 2 0 002 2v12a2 2 0 002 2z"></path>
+            </svg>
+            <span class="text-gray-600 text-xs font-semibold">色を選択</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 選択された色の表示 -->
+    <div id="selected-color-display" class="text-center <%= 'hidden' unless @post.color_theme_id %> mb-4" data-post-form-target="selectedColor">
+      <div class="inline-flex items-center gap-3 bg-green-50 rounded-full px-6 py-3 border-2 border-green-200">
+        <div class="w-10 h-10 rounded-full shadow-md" id="selected-color-circle" style="<%= "background-color: #{@post.color_theme.color_code}" if @post.color_theme %>"></div>
+        <div>
+          <p class="text-xs text-gray-600">選択中の色</p>
+          <p class="text-lg font-bold text-gray-800" id="selected-color-name"><%= @post.color_theme&.color_name %></p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 写真アップロード -->
+  <div class="bg-white rounded-2xl shadow-md p-6 mb-6">
+    <h2 class="text-lg font-semibold text-gray-800 mb-4">写真 <span class="text-red-500">*</span></h2>
+    
+    <% if @post.persisted? && @post.image.attached? %>
+      <div class="mb-4">
+        <p class="text-sm text-gray-600 mb-2">現在の写真:</p>
+        <%= image_tag @post.image.variant(resize_to_limit: [400, 400]), class: "w-full max-w-xs rounded-lg shadow-md mb-2" %>
+        <p class="text-xs text-gray-500">新しい写真を選択すると、現在の写真が置き換えられます</p>
+      </div>
+    <% end %>
+    
+    <%= f.file_field :image, accept: "image/jpeg,image/png,image/webp", class: "w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500" %>
+    <p class="text-sm text-gray-500 mt-2"><span class="text-red-500 font-semibold">* 写真は必須です</span>（JPEG、PNG、WebP形式、最大10MB）</p>
+  </div>
+
+  <!-- 場所情報 -->
+  <div class="bg-white rounded-2xl shadow-md p-6 mb-6">
+    <h2 class="text-lg font-semibold text-gray-800 mb-4">場所情報（任意）</h2>
+    
+    <!-- GPS座標取得ボタン -->
+    <button 
+      type="button"
+      data-action="click->geolocation#getCurrentPosition"
+      class="w-full mb-4 px-4 py-2 bg-green-100 hover:bg-green-200 text-green-800 font-semibold rounded-lg transition-colors"
+    >
+      📍 現在地を取得
+    </button>
+
+    <!-- エラーメッセージ表示 -->
+    <div data-geolocation-target="errorMessage" class="hidden mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+      <p class="text-sm text-red-700"></p>
+    </div>
+
+    <!-- GPS座標表示（取得後） -->
+    <div id="gps-coordinates" class="<%= @post.latitude.present? && @post.longitude.present? ? '' : 'hidden' %> mb-4 p-3 bg-gray-50 rounded-lg" data-geolocation-target="gpsDisplay">
+      <p class="text-sm text-gray-600">緯度: <span data-geolocation-target="latitude"><%= @post.latitude&.round(6) %></span></p>
+      <p class="text-sm text-gray-600">経度: <span data-geolocation-target="longitude"><%= @post.longitude&.round(6) %></span></p>
+    </div>
+
+    <%= f.hidden_field :latitude, data: { geolocation_target: "latitudeField" } %>
+    <%= f.hidden_field :longitude, data: { geolocation_target: "longitudeField" } %>
+
+    <!-- 場所名入力 -->
+    <div class="mt-4">
+      <%= f.label :location_name, "場所名", class: "block text-sm font-medium text-gray-700 mb-2" %>
+      <%= f.text_field :location_name, placeholder: "例: 家、カフェ、公園など", class: "w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500" %>
+    </div>
+  </div>
+
+  <!-- 説明文 -->
+  <div class="bg-white rounded-2xl shadow-md p-6 mb-6">
+    <h2 class="text-lg font-semibold text-gray-800 mb-4">説明文</h2>
+    <%= f.text_area :description, rows: 4, placeholder: "投稿の説明を入力してください", class: "w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500" %>
+  </div>
+
+  <!-- 送信ボタン -->
+  <div class="flex gap-4">
+    <%= f.submit @post.persisted? ? "更新する" : "投稿する", class: "flex-1 bg-green-500 hover:bg-green-600 text-white font-bold py-4 px-6 rounded-xl transition-colors shadow-md" %>
+    <%= link_to "キャンセル", @post.persisted? ? post_path(@post) : posts_path, class: "flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-4 px-6 rounded-xl transition-colors text-center" %>
+  </div>
+<% end %>
+

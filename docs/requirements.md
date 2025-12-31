@@ -245,8 +245,10 @@ end
 
 #### バリデーション
 
-- **必須**: `color_theme_id`（色の選択）
-- **任意**: `image`（写真）、`description`（説明文）、`latitude`/`longitude`（GPS 座標）、`location_name`（テキスト入力）
+- **必須**:
+  - `color_theme_id`（色の選択）
+  - `image`（写真）または `description`（説明文）のどちらか一方
+- **任意**: `latitude`/`longitude`（GPS 座標）、`location_name`（テキスト入力）
 
 #### データモデル
 

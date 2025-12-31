@@ -16,3 +16,4 @@ bundle exec rails db:migrate
 
 # Load seed data (optional - comment out if not needed)
 # bundle exec rails db:seed
+
