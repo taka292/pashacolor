@@ -2,6 +2,7 @@ class PostsController < ApplicationController
   before_action :authenticate_user!
   before_action :set_post, only: [ :show, :edit, :update, :destroy ]
   before_action :set_color_themes, only: [ :new, :edit ]
+  before_action :set_today_theme, only: [ :new, :edit ]
 
   def index
     @posts = current_user.posts.includes(:color_theme).recent
@@ -18,6 +19,13 @@ class PostsController < ApplicationController
 
   def new
     @post = current_user.posts.build
+
+    # URLパラメータから選択された色を設定、なければ今日のお題を設定
+    if params[:color_theme_id].present?
+      @post.color_theme_id = params[:color_theme_id]
+    elsif @today_theme.present?
+      @post.color_theme_id = @today_theme.color_theme_id
+    end
   end
 
   def create
@@ -49,6 +57,10 @@ class PostsController < ApplicationController
   end
 
   private
+
+  def set_today_theme
+    @today_theme = DailyTheme.today_theme
+  end
 
   def set_post
     @post = current_user.posts.includes(:color_theme).find(params[:id])
