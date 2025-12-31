@@ -1,0 +1,124 @@
+<div class="min-h-screen bg-gray-50 pb-20">
+  <div class="px-4 py-6 space-y-6">
+    <div class="max-w-2xl mx-auto">
+      <!-- ヘッダー -->
+      <div class="mb-6">
+        <h1 class="text-2xl font-bold text-gray-800 mb-2">カラーパレット</h1>
+        <p class="text-gray-600 text-sm">投稿した色でカラーパレットが埋まります</p>
+      </div>
+
+      <!-- カラーパレット（円形の色相環） -->
+      <div class="bg-white rounded-2xl shadow-md p-6 mb-6">
+        <div class="flex justify-center items-center">
+          <div class="relative" style="width: 320px; height: 320px;">
+            <% 
+              colors = @color_themes.map.with_index do |color, index|
+                angle = index * 30
+                {
+                  id: color.id,
+                  name: color.color_name,
+                  code: color.color_code,
+                  angle: angle,
+                  posted: @posted_colors.include?(color.id)
+                }
+              end
+            %>
+            
+            <% colors.each do |color| %>
+              <% 
+                x = 160 + 100 * Math.cos((color[:angle] - 90) * Math::PI / 180)
+                y = 160 + 100 * Math.sin((color[:angle] - 90) * Math::PI / 180)
+              %>
+              <% if color[:posted] %>
+                <!-- 投稿済み色（クリック可能） -->
+                <%= link_to posts_path(color_theme_id: color[:id]), 
+                    class: "absolute cursor-pointer block",
+                    style: "left: #{x - 20}px; top: #{y - 20}px;",
+                    title: "#{color[:name]}の投稿を見る" do %>
+                  <div 
+                    class="w-10 h-10 rounded-full border-4 border-white shadow-lg hover:scale-110 transition-all"
+                    style="background-color: <%= color[:code] %>;"
+                  ></div>
+                <% end %>
+              <% else %>
+                <!-- 未投稿色（グレーアウト） -->
+                <div 
+                  class="absolute"
+                  style="left: <%= x - 20 %>px; top: <%= y - 20 %>px;"
+                  title="<%= color[:name] %>（まだ投稿していません）"
+                >
+                  <div 
+                    class="w-10 h-10 rounded-full border-4 border-gray-200 shadow-sm"
+                    style="background-color: <%= color[:code] %>; filter: grayscale(100%) brightness(0.3); opacity: 0.15;"
+                  ></div>
+                </div>
+              <% end %>
+            <% end %>
+
+            <!-- 中央の円 -->
+            <div 
+              class="absolute rounded-full border-4 border-green-200 bg-white shadow-lg"
+              style="
+                width: 110px;
+                height: 110px;
+                left: 105px;
+                top: 105px;
+              "
+            >
+              <div class="flex flex-col items-center justify-center h-full">
+                <svg class="w-8 h-8 text-green-500 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"></path>
+                </svg>
+                <span class="text-gray-600 text-xs font-semibold">パレット</span>
+                <span class="text-gray-400 text-[10px] mt-1"><%= @posted_colors.size %> / 12</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 説明 -->
+        <div class="mt-6 text-center">
+          <p class="text-sm text-gray-600">
+            色をクリックすると、その色の投稿一覧を表示します
+          </p>
+        </div>
+      </div>
+
+      <!-- 投稿済み色の一覧 -->
+      <% if @posted_colors.any? %>
+        <div class="bg-white rounded-2xl shadow-md p-6">
+          <h2 class="text-lg font-semibold text-gray-800 mb-4">投稿済みの色</h2>
+          <div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-4">
+            <% colors.select { |c| c[:posted] }.each do |color| %>
+              <%= link_to posts_path(color_theme_id: color[:id]), 
+                  class: "flex flex-col items-center gap-2 p-3 rounded-lg hover:bg-gray-50 transition-colors" do %>
+                <div 
+                  class="w-16 h-16 rounded-full shadow-md border-4 border-white"
+                  style="background-color: <%= color[:code] %>"
+                ></div>
+                <span class="text-sm font-semibold text-gray-700"><%= color[:name] %></span>
+              <% end %>
+            <% end %>
+          </div>
+        </div>
+      <% else %>
+        <!-- まだ投稿がない場合 -->
+        <div class="bg-white rounded-2xl shadow-md p-12 text-center">
+          <div class="mb-6">
+            <svg class="w-24 h-24 text-gray-300 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"></path>
+            </svg>
+          </div>
+          <h2 class="text-xl font-bold text-gray-700 mb-2">まだ投稿がありません</h2>
+          <p class="text-gray-500 mb-6">最初の投稿を作成して、カラーパレットを埋めましょう！</p>
+          <%= link_to new_post_path, class: "inline-flex items-center gap-2 bg-green-500 hover:bg-green-600 text-white font-semibold px-8 py-3 rounded-xl transition-colors shadow-md" do %>
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+            </svg>
+            投稿を作成
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>
