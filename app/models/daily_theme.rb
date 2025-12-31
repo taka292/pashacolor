@@ -32,6 +32,11 @@ class DailyTheme < ApplicationRecord
       available_colors = ColorTheme.active
     end
 
+    # 有効な色が存在しない場合はエラー
+    if available_colors.empty?
+      raise "利用可能なカラーテーマが存在しません。管理者に連絡してください。"
+    end
+
     # ランダムに1色を選択
     selected_color = available_colors.sample
 
