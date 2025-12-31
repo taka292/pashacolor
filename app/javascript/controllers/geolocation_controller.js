@@ -1,14 +1,17 @@
 import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
-  static targets = ["latitudeField", "longitudeField", "gpsDisplay", "latitude", "longitude"]
+  static targets = ["latitudeField", "longitudeField", "gpsDisplay", "latitude", "longitude", "errorMessage"]
 
   // GPS座標を取得
   getCurrentPosition(event) {
     event.preventDefault()
 
+    // エラーメッセージを非表示にする
+    this.hideError()
+
     if (!navigator.geolocation) {
-      alert("このブラウザは位置情報をサポートしていません")
+      this.showError("このブラウザは位置情報をサポートしていません")
       return
     }
 
@@ -46,7 +49,7 @@ export default class extends Controller {
             errorMessage = "位置情報の取得がタイムアウトしました"
             break
         }
-        alert(errorMessage)
+        this.showError(errorMessage)
 
         button.disabled = false
         button.textContent = "📍 現在地を取得"
@@ -57,6 +60,25 @@ export default class extends Controller {
         maximumAge: 0
       }
     )
+  }
+
+  // エラーメッセージを表示
+  showError(message) {
+    if (this.hasErrorMessageTarget) {
+      this.errorMessageTarget.textContent = message
+      this.errorMessageTarget.classList.remove("hidden")
+    } else {
+      // フォールバック: エラー表示エリアがない場合はalertを使用
+      alert(message)
+    }
+  }
+
+  // エラーメッセージを非表示
+  hideError() {
+    if (this.hasErrorMessageTarget) {
+      this.errorMessageTarget.classList.add("hidden")
+      this.errorMessageTarget.textContent = ""
+    }
   }
 }
 

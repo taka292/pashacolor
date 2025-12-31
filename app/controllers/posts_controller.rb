@@ -1,10 +1,10 @@
 class PostsController < ApplicationController
   before_action :authenticate_user!
-  before_action :set_post, only: [:show, :edit, :update, :destroy]
-  before_action :set_color_themes, only: [:new, :edit]
+  before_action :set_post, only: [ :show, :edit, :update, :destroy ]
+  before_action :set_color_themes, only: [ :new, :edit ]
 
   def index
-    @posts = current_user.posts.recent
+    @posts = current_user.posts.includes(:color_theme).recent
   end
 
   def show
@@ -45,7 +45,7 @@ class PostsController < ApplicationController
   private
 
   def set_post
-    @post = current_user.posts.find(params[:id])
+    @post = current_user.posts.includes(:color_theme).find(params[:id])
   end
 
   def set_color_themes

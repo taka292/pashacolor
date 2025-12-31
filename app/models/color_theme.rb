@@ -30,6 +30,6 @@ class ColorTheme < ApplicationRecord
 
   # RGB値を配列で返す
   def rgb
-    [rgb_r, rgb_g, rgb_b]
+    [ rgb_r, rgb_g, rgb_b ]
   end
 end

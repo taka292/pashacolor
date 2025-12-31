@@ -23,7 +23,6 @@ export default class extends Controller {
   initializeMap() {
     // 緯度経度が存在しない場合は何もしない
     if (!this.latitudeValue || !this.longitudeValue) {
-      console.log('位置情報がありません')
       return
     }
 
@@ -48,20 +47,7 @@ export default class extends Controller {
       title: this.locationNameValue || '投稿位置',
       animation: google.maps.Animation.DROP,
     })
-
-    // 情報ウィンドウの追加（場所名がある場合）
-    if (this.locationNameValue) {
-      const infoWindow = new google.maps.InfoWindow({
-        content: `<div class="p-2"><strong>${this.locationNameValue}</strong></div>`
-      })
-      
-      marker.addListener('click', () => {
-        infoWindow.open(map, marker)
-      })
-      
-      // 初期表示で情報ウィンドウを開く
-      infoWindow.open(map, marker)
-    }
   }
 }
+
 

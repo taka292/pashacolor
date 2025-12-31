@@ -103,6 +103,11 @@
       📍 現在地を取得
     </button>
 
+    <!-- エラーメッセージ表示 -->
+    <div data-geolocation-target="errorMessage" class="hidden mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+      <p class="text-sm text-red-700"></p>
+    </div>
+
     <!-- GPS座標表示（取得後） -->
     <div id="gps-coordinates" class="<%= @post.latitude.present? && @post.longitude.present? ? '' : 'hidden' %> mb-4 p-3 bg-gray-50 rounded-lg" data-geolocation-target="gpsDisplay">
       <p class="text-sm text-gray-600">緯度: <span data-geolocation-target="latitude"><%= @post.latitude&.round(6) %></span></p>
