@@ -13,6 +13,7 @@ Rails.application.routes.draw do
 
   # カラーパレット機能
   get "palette", to: "palette#index", as: :palette
+  post "palette/select", to: "palette#select_palette", as: :select_palette
 
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 

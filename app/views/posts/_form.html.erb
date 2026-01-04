@@ -19,18 +19,25 @@
 <%= form_with model: @post, local: true, multipart: true, data: { controller: "post-form geolocation", post_form_target: "form" } do |f| %>
   <%= render "devise/shared/error_messages", resource: @post %>
 
-  <!-- 色選択セクション -->
+    <!-- 色選択セクション -->
   <div class="bg-white rounded-2xl shadow-md p-6 mb-6">
     <h2 class="text-lg font-semibold text-gray-800 mb-4 text-center">
       色を選択してください <span class="text-red-500">*</span>
     </h2>
-    
+
+    <!-- 現在のアクティブパレット情報 -->
+    <div class="mb-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+      <p class="text-sm text-blue-800">
+        <span class="font-semibold"><%= @current_palette.name %></span> の色から選択してください
+      </p>
+    </div>
+
     <!-- 円形の色相環 -->
     <div class="flex justify-center items-center mb-6">
       <div class="relative" style="width: 320px; height: 320px;">
-        <% 
-          colors = @color_themes.map.with_index do |color, index|
-            angle = index * 30
+        <%
+          colors = @available_color_themes.map.with_index do |color, index|
+            angle = index * (360.0 / @available_color_themes.count)
             {
               id: color.id,
               name: color.color_name,

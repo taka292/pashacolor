@@ -20,6 +20,10 @@ class PostsController < ApplicationController
   def new
     @post = current_user.posts.build
 
+    # 現在のアクティブパレットを取得
+    @current_palette = ColorPalette.current_palette_for(current_user)
+    @available_color_themes = @current_palette.color_themes.active.ordered
+
     # URLパラメータから選択された色を設定、なければ今日のお題を設定
     if params[:color_theme_id].present?
       @post.color_theme_id = params[:color_theme_id]
@@ -59,7 +63,7 @@ class PostsController < ApplicationController
   private
 
   def set_today_theme
-    @today_theme = DailyTheme.today_theme
+    @today_theme = DailyTheme.today_theme(current_user)
   end
 
   def set_post
