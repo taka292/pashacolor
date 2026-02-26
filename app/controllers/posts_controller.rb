@@ -59,7 +59,7 @@ class PostsController < ApplicationController
   private
 
   def set_today_theme
-    @today_theme = DailyTheme.today_theme
+    @today_theme = DailyTheme.today_theme(current_user)
   end
 
   def set_post
