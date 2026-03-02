@@ -4,6 +4,7 @@ Rails.application.configure do
   # Settings specified here will take precedence over those in config/application.rb.
   config.hosts << 'pashacolor.com'
   config.hosts << 'www.pashacolor.com'
+  config.hosts << 'pashacolor.onrender.com'
 
   # Code is not reloaded between requests.
   config.enable_reloading = false
