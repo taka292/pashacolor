@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2025_12_30_102727) do
+ActiveRecord::Schema[8.1].define(version: 2026_01_04_140251) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -42,13 +42,24 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_30_102727) do
     t.index ["blob_id", "variation_digest"], name: "index_active_storage_variant_records_uniqueness", unique: true
   end
 
+  create_table "color_palettes", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.text "description"
+    t.integer "display_order", null: false
+    t.string "name", null: false
+    t.datetime "updated_at", null: false
+    t.index ["display_order"], name: "index_color_palettes_on_display_order", unique: true
+  end
+
   create_table "color_themes", force: :cascade do |t|
     t.string "color_code", null: false
     t.string "color_name", null: false
+    t.integer "color_palette_id"
     t.datetime "created_at", null: false
     t.text "description"
     t.integer "display_order", null: false
     t.boolean "is_active", default: true, null: false
+    t.integer "palette_id"
     t.datetime "updated_at", null: false
     t.index ["display_order"], name: "index_color_themes_on_display_order"
     t.index ["is_active"], name: "index_color_themes_on_is_active"
@@ -60,8 +71,23 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_30_102727) do
     t.text "description"
     t.date "theme_date", null: false
     t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
     t.index ["color_theme_id"], name: "index_daily_themes_on_color_theme_id"
-    t.index ["theme_date"], name: "index_daily_themes_on_theme_date", unique: true
+    t.index ["user_id", "theme_date"], name: "index_daily_themes_on_user_id_and_theme_date", unique: true
+    t.index ["user_id"], name: "index_daily_themes_on_user_id"
+  end
+
+  create_table "palette_progresses", force: :cascade do |t|
+    t.bigint "color_palette_id", null: false
+    t.datetime "completed_at"
+    t.datetime "created_at", null: false
+    t.string "status", default: "locked", null: false
+    t.datetime "unlocked_at"
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["color_palette_id"], name: "index_palette_progresses_on_color_palette_id"
+    t.index ["user_id", "color_palette_id"], name: "index_palette_progresses_on_user_id_and_color_palette_id", unique: true
+    t.index ["user_id"], name: "index_palette_progresses_on_user_id"
   end
 
   create_table "posts", force: :cascade do |t|
@@ -95,7 +121,11 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_30_102727) do
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "color_themes", "color_palettes"
   add_foreign_key "daily_themes", "color_themes"
+  add_foreign_key "daily_themes", "users"
+  add_foreign_key "palette_progresses", "color_palettes"
+  add_foreign_key "palette_progresses", "users"
   add_foreign_key "posts", "color_themes"
   add_foreign_key "posts", "users"
 end
