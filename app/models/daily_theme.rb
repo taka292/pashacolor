@@ -1,14 +1,12 @@
 class DailyTheme < ApplicationRecord
   belongs_to :user
   belongs_to :color_theme
-  belongs_to :user
 
   # バリデーション
   validates :theme_date, presence: true
   validates :theme_date, uniqueness: { scope: :user_id }
 
   # 今日のお題を取得（存在しなければ自動生成）
-  def self.today_theme(user)
   def self.today_theme(user)
     today = Date.current
     theme = find_by(user: user, theme_date: today)
@@ -17,12 +15,10 @@ class DailyTheme < ApplicationRecord
 
     # 今日のお題が存在しない場合は自動生成
     create_today_theme(user)
-    create_today_theme(user)
   end
 
   private
 
-  def self.create_today_theme(user)
   def self.create_today_theme(user)
     today = Date.current
 
