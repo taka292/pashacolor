@@ -1,12 +1,14 @@
 class ColorTheme < ApplicationRecord
   # 関連付け
+  belongs_to :color_palette, optional: true
   has_many :posts, dependent: :destroy
   has_many :daily_themes, dependent: :destroy
 
   # バリデーション
   validates :color_name, presence: true
   validates :color_code, presence: true, format: { with: /\A#[0-9A-Fa-f]{6}\z/, message: "はHEX形式（#RRGGBB）で入力してください" }
-  validates :display_order, presence: true, uniqueness: true
+  validates :display_order, presence: true
+  validates :display_order, uniqueness: { scope: :color_palette_id }, allow_nil: true
 
   # スコープ
   scope :active, -> { where(is_active: true) }

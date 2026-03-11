@@ -4,16 +4,100 @@
       <!-- ヘッダー -->
       <div class="mb-6">
         <h1 class="text-2xl font-bold text-gray-800 mb-2">カラーパレット</h1>
-        <p class="text-gray-600 text-sm">投稿した色でカラーパレットが埋まります</p>
+        <p class="text-gray-600 text-sm">様々なテーマの色を集めてパレットをコンプリートしましょう</p>
+      </div>
+
+      <!-- パレット一覧 -->
+      <div class="bg-white rounded-2xl shadow-md p-6 mb-6">
+        <h2 class="text-lg font-semibold text-gray-800 mb-4">パレット一覧</h2>
+        <div class="space-y-3">
+          <% @palettes.each do |palette| %>
+            <%
+              progress = @palette_progresses[palette.id]
+              is_current = palette.id == @current_palette.id
+              status = if progress&.status == 'completed'
+                         'completed'
+                       elsif progress&.status == 'unlocked' || palette.display_order == 1
+                         'unlocked'
+                       else
+                         'locked'
+                       end
+            %>
+            <div class="flex items-center justify-between p-4 rounded-lg border-2 <%=
+              case status
+              when 'completed'
+                'border-green-200 bg-green-50'
+              when 'unlocked'
+                is_current ? 'border-blue-200 bg-blue-50' : 'border-gray-200 bg-white'
+              else
+                'border-gray-100 bg-gray-50'
+              end
+            %>">
+              <div class="flex-1">
+                <div class="flex items-center gap-2 mb-1">
+                  <h3 class="font-semibold text-gray-800"><%= palette.name %></h3>
+                  <% if status == 'completed' %>
+                    <span class="text-xs bg-green-500 text-white px-2 py-1 rounded-full">完了</span>
+                  <% elsif is_current %>
+                    <span class="text-xs bg-blue-500 text-white px-2 py-1 rounded-full">選択中</span>
+                  <% elsif status == 'locked' %>
+                    <span class="text-xs bg-gray-400 text-white px-2 py-1 rounded-full">未開放</span>
+                  <% end %>
+                </div>
+                <p class="text-sm text-gray-600"><%= palette.description %></p>
+                <% if status == 'unlocked' || status == 'completed' %>
+                  <%
+                    total_colors = palette.color_themes.count
+                    completed_colors = palette.color_themes.joins(:posts).where(posts: { user_id: current_user.id }).distinct.count
+                  %>
+                  <div class="mt-2">
+                    <div class="flex justify-between text-xs text-gray-500 mb-1">
+                      <span>進捗</span>
+                      <span><%= completed_colors %> / <%= total_colors %></span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-2">
+                      <div class="bg-blue-500 h-2 rounded-full" style="width: <%= (completed_colors.to_f / total_colors * 100).to_i %>%"></div>
+                    </div>
+                  </div>
+                <% end %>
+              </div>
+              <% if status.in?(['unlocked', 'completed']) %>
+                <%= button_to select_palette_path(palette_id: palette.id),
+                    method: :post,
+                    class: "ml-4 px-4 py-2 text-white text-sm font-semibold rounded-lg transition-colors #{is_current ? 'bg-green-500 hover:bg-green-600' : 'bg-blue-500 hover:bg-blue-600'}",
+                    disabled: is_current do %>
+                  <%= is_current ? '選択中' : '選択する' %>
+                <% end %>
+              <% end %>
+            </div>
+          <% end %>
+        </div>
       </div>
 
       <!-- カラーパレット（円形の色相環） -->
       <div class="bg-white rounded-2xl shadow-md p-6 mb-6">
+        <div class="flex items-center justify-between mb-4">
+          <div>
+            <h2 class="text-lg font-semibold text-gray-800"><%= @current_palette.name %></h2>
+            <p class="text-sm text-gray-600"><%= @current_palette.description %></p>
+          </div>
+          <%
+            total_colors = @color_themes.count
+            completed_colors = @posted_colors.count { |id| @color_themes.any? { |theme| theme.id == id } }
+          %>
+          <div class="text-right">
+            <div class="text-sm font-semibold text-gray-800"><%= completed_colors %> / <%= total_colors %></div>
+            <% if completed_colors == total_colors %>
+              <div class="text-xs text-green-600 font-semibold">🎉 コンプリート！</div>
+            <% end %>
+          </div>
+        </div>
+
         <div class="flex justify-center items-center">
           <div class="relative" style="width: 320px; height: 320px;">
-            <% 
+            <%
               colors = @color_themes.map.with_index do |color, index|
-                angle = index * 30
+                angle = index * (360.0 / @color_themes.count)
                 {
                   id: color.id,
                   name: color.color_name,
@@ -23,31 +107,31 @@
                 }
               end
             %>
-            
+
             <% colors.each do |color| %>
-              <% 
+              <%
                 x = 160 + 100 * Math.cos((color[:angle] - 90) * Math::PI / 180)
                 y = 160 + 100 * Math.sin((color[:angle] - 90) * Math::PI / 180)
               %>
               <% if color[:posted] %>
                 <!-- 投稿済み色（クリック可能） -->
-                <%= link_to posts_path(color_theme_id: color[:id]), 
+                <%= link_to posts_path(color_theme_id: color[:id]),
                     class: "absolute cursor-pointer block",
                     style: "left: #{x - 20}px; top: #{y - 20}px;",
                     title: "#{color[:name]}の投稿を見る" do %>
-                  <div 
+                  <div
                     class="w-10 h-10 rounded-full border-4 border-white shadow-lg hover:scale-110 transition-all"
                     style="background-color: <%= color[:code] %>;"
                   ></div>
                 <% end %>
               <% else %>
                 <!-- 未投稿色（グレーアウト） -->
-                <div 
+                <div
                   class="absolute"
                   style="left: <%= x - 20 %>px; top: <%= y - 20 %>px;"
                   title="<%= color[:name] %>（まだ投稿していません）"
                 >
-                  <div 
+                  <div
                     class="w-10 h-10 rounded-full border-4 border-gray-200 shadow-sm"
                     style="background-color: <%= color[:code] %>; filter: grayscale(100%) brightness(0.3); opacity: 0.15;"
                   ></div>
@@ -56,7 +140,7 @@
             <% end %>
 
             <!-- 中央の円 -->
-            <div 
+            <div
               class="absolute rounded-full border-4 border-green-200 bg-white shadow-lg"
               style="
                 width: 110px;
@@ -70,7 +154,7 @@
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"></path>
                 </svg>
                 <span class="text-gray-600 text-xs font-semibold">パレット</span>
-                <span class="text-gray-400 text-[10px] mt-1"><%= @posted_colors.size %> / 12</span>
+                <span class="text-gray-400 text-[10px] mt-1"><%= completed_colors %> / <%= total_colors %></span>
               </div>
             </div>
           </div>

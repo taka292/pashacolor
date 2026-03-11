@@ -1,5 +1,8 @@
-class AddUserIdToDailyThemes < ActiveRecord::Migration[8.1]
+class AddUserIdToDailyThemes20250228 < ActiveRecord::Migration[8.1]
   def change
+    return unless table_exists?(:daily_themes)
+    return unless table_exists?(:users)
+
     unless column_exists?(:daily_themes, :user_id)
       add_reference :daily_themes, :user, null: false, foreign_key: true
     end
